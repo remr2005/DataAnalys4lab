@@ -4,9 +4,10 @@ from dsmltf import gradient, gradient_descent, minimize_stochastic
 import matplotlib.pyplot as plt
 
 x = list()
-
+def furie2(k,a):
+    return a[0]+a[1]*cos(a[2]*k+a[8])+a[3]*cos(a[4]*k+a[9])+a[5]*cos(a[6]*k*2+a[10])+cos(a[7]*2*k+a[11])
 def furie(k,a):
-    return a[0] + a[1]*cos(a[2]*k) + a[3]* sin(k) + a[3]*cos(2*k) + a[4]*sin(2*k)
+    return a[0] + a[1]*cos(k) + a[2]* sin(k) + a[3]*cos(2*k) + a[4]*sin(2*k)
 
 def F(a:list) -> float:
     global x
@@ -17,7 +18,7 @@ def f(i,a):
     return abs(x[i]-furie(i,a))
 
 def main():
-    k=1
+    k=30
     dt=2*pi/1000
     omega=1000/k
     L=k/100
@@ -33,9 +34,8 @@ def main():
     plt.plot(base, x, label='Изначальная функция', marker='o')
     plt.plot(base, [furie(i,a0[0]) for i in range(500)], label=f'Градиентный спуск', linestyle='-')
     plt.plot(base, [furie(i,a1[0]) for i in range(500)], label=f'Стохатичный градиентный спуск', linestyle='-')
-    plt.xlabel('Время')
-    plt.ylabel('Значение')
-    plt.title('Аппроксимация полиномом')
+    plt.xlabel('x')
+    plt.ylabel('y')
     plt.legend()
     plt.grid(True)
     plt.show()
