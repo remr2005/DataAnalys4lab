@@ -1,54 +1,45 @@
 import random
-from math import sqrt
+from math import sqrt, pi, sin, cos
+from dsmltf import gradient, gradient_descent, minimize_stochastic
+import matplotlib.pyplot as plt
 
-def gradient(f, x, h=1e-05):
-    grad = []
-    for i,_ in enumerate(x):
-        xh = [x_j+(h if j == i else 0) for j, x_j in enumerate(x)]
-        grad.append((f(xh)-f(x))/h)
-    return grad
+x = list()
 
-def scalar_multiply(n,x):
-    return [n*i for i in x]
+def furie(k,a):
+    return a[0] + a[1]*cos(a[2]*k) + a[3]* sin(k) + a[3]*cos(2*k) + a[4]*sin(2*k)
 
-def vector_add(a,b):
-    return [a[i]+b[i] for i in range(len(a))]
+def F(a:list) -> float:
+    global x
+    return sum([abs(x[j]-furie(j,a)) for j in range(500)])
 
-def gradient_descent(f, x0, mu=0.05, h=1e-05, s=5000):
-    x = x0.copy()
-    for si in range(s):
-        gf = gradient(f,x,h)
-        mgf = scalar_multiply(mu*sqrt(sum(g**2 for g in gf)),gf)
-        x = vector_add(x, scalar_multiply(-1, mgf))
-    return x
-
-# Стохастический градиентный спуск
-def minimize_stochastic(f, x, y, a_0, h_0 = 0.1, max_steps = 1000):
-    a = a_0
-    h = h_0
-    min_a, min_F = None, float('inf')
-    drunken_steps = 0
-    while drunken_steps < max_steps:
-        value = sum((f(xx,a)-yy)**2 for xx,yy in zip(x,y))
-        if value < min_F:
-            min_a, min_F = a, value
-            drunken_steps = 0
-            h = h_0
-        else:
-            drunken_steps += 1
-            h *= 0.9
-            n = random.randint(0,len(x)-1)
-            grad = []
-            for i,_ in enumerate(a):
-                ah = a.copy()
-                ah[i] += h
-                # главное - в этом шаге (суммы нет!)
-                grad.append(((f(x[n],ah)-y[n])**2-(f(x[n],a)-y[n])**2)/h)
-    a = [a[i] - h*grad[i] for i,_ in enumerate(a)]
-    return min_a, value
+def f(i,a):
+    global x
+    return abs(x[i]-furie(i,a))
 
 def main():
-    print()
+    k=1
+    dt=2*pi/1000
+    omega=1000/k
+    L=k/100
+    global x
+    x = [0,(-1)**k * dt]
+    for i in range(2,500):
+        x.append(x[i-1]*(2+dt*L*(1-x[i-2]**2))- x[i-2]*(1+dt**2+dt*L*(1-x[i-2]**2))+dt**2*sin(omega*dt))  
+    a0 = gradient_descent(F,[0,0,0,0,0])
+    a1 = minimize_stochastic(f,[i for i in range(500)],[0]*500,[0,0,0,0,0])
+    print(a0[0],a1[0])
+    print(a0[1],a1[1])
+    base = [i for i in range(500)]
+    plt.plot(base, x, label='Изначальная функция', marker='o')
+    plt.plot(base, [furie(i,a0[0]) for i in range(500)], label=f'Градиентный спуск', linestyle='-')
+    plt.plot(base, [furie(i,a1[0]) for i in range(500)], label=f'Стохатичный градиентный спуск', linestyle='-')
+    plt.xlabel('Время')
+    plt.ylabel('Значение')
+    plt.title('Аппроксимация полиномом')
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+
 
 if __name__ == "__main__":
     main()
