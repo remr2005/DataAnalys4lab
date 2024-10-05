@@ -1,9 +1,7 @@
-import random
 from time import time
-from math import sqrt, pi, sin, cos
-from dsmltf import gradient, gradient_descent, minimize_stochastic
+from math import pi, sin, cos
+from dsmltf import gradient_descent, minimize_stochastic
 import matplotlib.pyplot as plt
-from statistics import mean
 
 # какой то коэфициент)))
 dt = 2*pi/1000
