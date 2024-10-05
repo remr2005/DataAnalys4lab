@@ -1,4 +1,5 @@
 import random
+from time import time
 from math import sqrt, pi, sin, cos
 from dsmltf import gradient, gradient_descent, minimize_stochastic
 import matplotlib.pyplot as plt
@@ -8,9 +9,12 @@ from statistics import mean
 dt = 2*pi/1000
 # иксы
 x = list()
+# ряд из 500 значений
+base = [2*pi*(i/500) for i in range(500)]
 # функция фурье 
 def furie(k,a):
-    return a[0]+a[1]*cos(a[2]*dt*k) + a[3]*sin(a[2]*dt*k)+a[4]*cos(a[5]*dt*k)+a[6]*sin(a[5]*dt*k)
+    global base
+    return a[0]+a[1]*cos(base[k]) + a[2]*sin(base[k])+a[3]*cos(2*base[k])+a[4]*sin(2*base[k])
 
 # функция ошибки для обычного градиентного спуска
 def F(a:list) -> float:
@@ -29,16 +33,18 @@ def main():
     omega=1000/k
     L=k/100
     global x
+    global base
     x = [0,(-1)**k * dt]
     for i in range(2,500):
         x.append(x[i-1]*(2+dt*L*(1-x[i-2]**2))- x[i-2]*(1+dt**2+dt*L*(1-x[i-2]**2))+dt**2*sin(omega*dt))  
     # вычисляем коэфициенты
-    a0 = gradient_descent(F,[0]*7)
-    a1 = minimize_stochastic(f,[i for i in range(500)],[0]*500,[0]*7)
-    print(a0[0],a0[0])
+    s_t_0 = time()
+    a0 = gradient_descent(F,[0]*5)
+    s_t_1 = time()
+    a1 = minimize_stochastic(f,[i for i in range(500)],[0]*500,[0]*5)
+    print(a0[0],a0[1])
     print(a1[0],a1[1])
-    # ряд из 500 значений
-    base = [i for i in range(500)]
+    print(f"{s_t_1-s_t_0} секунд",f"{time()-s_t_1} секунд")
     # рисуем графики
     plt.plot(base, x, label='Изначальная функция', marker='o')
     plt.plot(base, [furie(i,a0[0]) for i in range(500)], label=f'Градиентный спуск', linestyle='-')
